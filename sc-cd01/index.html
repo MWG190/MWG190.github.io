@@ -86,13 +86,6 @@
   .party{font-size:11px;font-weight:700;letter-spacing:.06em}
   .R{color:#f0b4b4}.D{color:#b7d4ff}.L{color:#e7d48a}.O{color:#cfcfcf}
   .close{position:absolute;right:10px;top:10px;background:transparent;border:0;color:#c9d4de;font-size:20px;cursor:pointer}
-  .legend{
-    position:absolute;left:16px;bottom:24px;z-index:500;background:rgba(13,27,42,.92);
-    border:1px solid #2c4a63;border-radius:12px;padding:10px 12px;font-size:12px
-  }
-  .legend div{display:flex;align-items:center;gap:8px;margin:3px 0}
-  .sw{width:16px;height:10px;border-radius:2px}
-  .note{font-size:11px;color:#8ea0b0;line-height:1.35;margin-top:6px;max-width:220px}
   .leaflet-control-attribution{background:rgba(8,16,24,.7)!important;color:#9aa8b5!important}
   @media (max-width:860px){
     #app{grid-template-columns:1fr;grid-template-rows:auto 1fr}
@@ -107,7 +100,7 @@
     <header class="brand">
       <div class="kicker">November 3, 2026 · General election</div>
       <h1>CD-01 precinct map · unique colors</h1>
-      <p>Berkeley, Charleston, and Dorchester only. Click a precinct for the federal, statewide, and House names on that ballot.</p>
+      <p>Berkeley, Charleston, and Dorchester only. Republican names only. Click a precinct for the ballot lines in that precinct.</p>
     </header>
     <div class="controls">
       <div class="search">
@@ -130,54 +123,49 @@
   <div style="position:relative">
     <div id="map"></div>
     <div class="panel" id="panel"></div>
-    <div class="legend">
-      <div><span class="sw" style="background:linear-gradient(90deg,#e74c3c,#f1c40f,#2ecc71,#3498db,#9b59b6)"></span> One unique color per precinct</div>
-      <div><span class="sw" style="background:transparent;outline:2px solid #000;height:8px"></span> Black line = precinct edge</div>
-      <div class="note">Every precinct is a different color. Zoom in to see the black outlines. Not a certified sample ballot — confirm at scvotes.gov.</div>
-    </div>
   </div>
 </div>
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script src="mini.js"></script>
 <script>
 const HOUSE = {
-  15:[["Heather Bell Hickman","R"],["J.A. Moore","D"]],
-  80:[["Kathy DuBeau Landing","R"],["Benjamin Brown","D"]],
-  90:[["See sample ballot","O"]],
-  92:[["Brandon Cox","R"],["Byron Walters","D"]],
-  94:[["Gil Gatch","R"],["Sally Hebert","D"]],
-  95:[["See sample ballot","R"],["Gilda Cobb-Hunter","D"]],
-  97:[["Robby Robbins","R"],["Cathy A. Jaggars","D"]],
-  98:[["Greg Ford","R"],["Sonja Ogletree Satani","D"]],
-  99:[["Jarrod Brooks","R"],["Samuel Price","D"]],
-  100:[["Sylleste Davis","R"],["Crystal Campbell","D"]],
-  101:[["Arnie Borowsky","R"],["Roger Kirby","D"]],
-  102:[["Harriet Holman","R"],["Montez Aiken","D"]],
-  103:[["No Republican nominee","O"],["Carl Anderson","D"]],
-  108:[["Lee Hewitt","R"],["Kathy Redwine","D"]],
-  109:[["See sample ballot","O"],["Tiffany Spann-Wilder","D"]],
-  110:[["Tom Hartnett","R"],["KJ Atwood","D"]],
-  111:[["See sample ballot","O"],["Wendell Gilliard","D"]],
-  112:[["Joe Bustos","R"],["Jenna Arsenault","D"]],
-  113:[["See sample ballot","O"],["Courtney Waters","D"]],
-  114:[["Gary Brewer","R"],["Kelly Hough","D"]],
-  115:[["Johnnie Garmon","R"],["Nick Uricchio","D"]],
-  116:[["James Teeple","R"],["Clay Middleton","D"]],
-  117:[["Jordan Pace","R"],["Ashley Painter","D"]],
-  119:[["Lee Edwards","R"],["Leon Stavrinakis","D"]]
+  15:[["Heather Bell Hickman","R"]],
+  80:[["Kathy DuBeau Landing","R"]],
+  90:[],
+  92:[["Brandon Cox","R"]],
+  94:[["Gil Gatch","R"]],
+  95:[["See sample ballot","R"]],
+  97:[["Robby Robbins","R"]],
+  98:[["Greg Ford","R"]],
+  99:[["Jarrod Brooks","R"]],
+  100:[["Sylleste Davis","R"]],
+  101:[["Arnie Borowsky","R"]],
+  102:[["Harriet Holman","R"]],
+  103:[],
+  108:[["Lee Hewitt","R"]],
+  109:[],
+  110:[["Tom Hartnett","R"]],
+  111:[],
+  112:[["Joe Bustos","R"]],
+  113:[],
+  114:[["Gary Brewer","R"]],
+  115:[["Johnnie Garmon","R"]],
+  116:[["James Teeple","R"]],
+  117:[["Jordan Pace","R"]],
+  119:[["Lee Edwards","R"]]
 };
 const STATEWIDE = [
-  ["Governor / Lt. Governor",[["Alan Wilson / Mike Reichenbach","R"],["Jermaine Johnson","D"]]],
-  ["Attorney General",[["David M. Stumbo","R"],["Richard Hricik","D"]]],
-  ["Secretary of State",[["Mark Hammond","R"],["Jason Belton","D"]]],
-  ["State Treasurer",[["Curtis Loftis Jr.","R"],["Vincent Coe","D"]]],
-  ["Comptroller General",[["Mike Burkhold","R"],["Tiffany Boozer","D"]]],
-  ["Supt. of Education",[["Ellen Weaver","R"],["Sylvia Wright","D"]]],
-  ["Ag. Commissioner",[["Cody Simpson","R"],["DeShawn Blanding","D"]]]
+  ["Governor / Lt. Governor",[["Alan Wilson / Mike Reichenbach","R"]]],
+  ["Attorney General",[["David M. Stumbo","R"]]],
+  ["Secretary of State",[["Mark Hammond","R"]]],
+  ["State Treasurer",[["Curtis Loftis Jr.","R"]]],
+  ["Comptroller General",[["Mike Burkhold","R"]]],
+  ["Supt. of Education",[["Ellen Weaver","R"]]],
+  ["Ag. Commissioner",[["Cody Simpson","R"]]]
 ];
-const SENATE = [["Darline Graham","R"],["Annie Andrews","D"],["Kasie Whitener","L"],["Mark Hackett","Con"]];
-const CD1 = [["Jenny Costa Honeycutt","R"],["Nancy Lacore","D"],["Bill Reeside","L"]];
-const CD6 = [["John Peterson","R"],["Jim Clyburn","D"]];
+const SENATE = [["Darline Graham","R"]];
+const CD1 = [["Jenny Costa Honeycutt","R"]];
+const CD6 = [["John Peterson","R"]];
 const LOCAL = {
   Berkeley: [
     ["County Supervisor",[["Johnny Cribb","R"]]],
@@ -188,14 +176,12 @@ const LOCAL = {
     ["Register of Deeds",[["Cindy Forte","R"]]]
   ],
   Charleston: [
-    ["Probate Judge",[["Irv Condon","R"],["Tamara Cunningham Curry","D"]]],
-    ["Register of Deeds",[["Karen Lesser Hollings","D"]]]
+    ["Probate Judge",[["Irv Condon","R"]]]
   ],
   Dorchester: [
-    ["County Council (if your district is on the ballot)",[["D2 Joe Debney (R) vs Bryan Holman (D)","O"],["D3 Rita May Oliphant Ranck (R) vs Jessica Bright (D)","O"],["D7 Jennifer Kunda (R) vs Preston Smelt (D)","O"]]]
+    ["County Council",[["Joe Debney — District 2","R"],["Rita May Oliphant Ranck — District 3","R"],["Jennifer Kunda — District 7","R"]]]
   ]
 };
-
 const MINI = window.MINI || {};
 const CO = {Berkeley:"B",Charleston:"C",Dorchester:"D"};
 let feats = [];
@@ -253,14 +239,19 @@ function visible(){
   });
 }
 
+function onlyR(list){
+  return (list||[]).filter(([n,p])=>p==="R");
+}
 function candRows(list){
-  return list.map(([n,p])=>`<div class="cand"><span>${n}</span><span class="party ${p}">${p}</span></div>`).join("");
+  const rows = onlyR(list);
+  if(!rows.length) return `<div class="cand"><span>No Republican on this ballot line</span><span class="party O">—</span></div>`;
+  return rows.map(([n,p])=>`<div class="cand"><span>${n}</span><span class="party ${p}">${p}</span></div>`).join("");
 }
 
 function openPanel(f){
   selected=f;
   const p=f.properties;
-  const houseCands = HOUSE[p.house] || [["See sample ballot","O"]];
+  const houseCands = HOUSE[p.house] || [];
   const us = p.cd==="1"?CD1:CD6;
   const loc = LOCAL[p.county]||[];
   document.getElementById("panel").style.display="block";
@@ -269,7 +260,7 @@ function openPanel(f){
     <span class="badge ${p.cd==="1"?"b1":"b6"}">U.S. House CD-${p.cd}</span>
     <span class="badge b1">SC House ${p.house||"—"}</span>
     <h2>${p.precinct}</h2>
-    <div class="sub">${p.county} County · precinct ${p.pcode||""}</div>
+    <div class="sub">${p.county} County · precinct ${p.pcode||""} · Republicans only</div>
     <div class="office"><h3>U.S. Senate</h3>${candRows(SENATE)}</div>
     <div class="office"><h3>U.S. House, District ${p.cd}</h3>${candRows(us)}</div>
     ${STATEWIDE.map(([o,cs])=>`<div class="office"><h3>${o}</h3>${candRows(cs)}</div>`).join("")}
