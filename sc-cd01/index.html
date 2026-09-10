@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>SC-01 Live Map · Berkeley, Charleston &amp; Dorchester</title>
+<title>SC-01 Live Map · Beaufort, Berkeley, Charleston & Dorchester</title>
 <link rel="preconnect" href="https://fonts.googleapis.com"/>
 <link rel="preconnect" href="https://unpkg.com"/>
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,700&family=Source+Sans+3:wght@400;600;700&display=swap" rel="stylesheet"/>
@@ -100,7 +100,7 @@
     <header class="brand">
       <div class="kicker">November 3, 2026 · General election</div>
       <h1>CD-01 precinct map · unique colors</h1>
-      <p>Berkeley, Charleston, and Dorchester only. Republican names only. Click a precinct for the ballot lines in that precinct.</p>
+      <p>Beaufort, Berkeley, Charleston, and Dorchester. Republicans plus nonpartisan school-board seats. Click a precinct for names on that ballot.</p>
     </header>
     <div class="controls">
       <div class="search">
@@ -152,7 +152,13 @@ const HOUSE = {
   115:[["Johnnie Garmon","R"]],
   116:[["James Teeple","R"]],
   117:[["Jordan Pace","R"]],
-  119:[["Lee Edwards","R"]]
+  118:[["Bill Herbkersman","R"]],
+  119:[["Lee Edwards","R"]],
+  120:[["Weston Newton","R"]],
+  121:[["Shelley Gay Yuhas","R"]],
+  122:[["Bill Hager","R"]],
+  123:[["Jeff Bradley","R"]],
+  124:[["Shannon Erickson","R"]]
 };
 const STATEWIDE = [
   ["Governor / Lt. Governor",[["Alan Wilson / Mike Reichenbach","R"]]],
@@ -167,6 +173,13 @@ const SENATE = [["Darline Graham","R"]];
 const CD1 = [["Jenny Costa Honeycutt","R"]];
 const CD6 = [["John Peterson","R"]];
 const LOCAL = {
+  Beaufort: [
+    ["Sheriff",[["Doug Seifert","R"]]],
+    ["Auditor",[["David Cadd","R"]]],
+    ["Treasurer",[["Maria Walls","R"]]],
+    ["Probate Judge",[["Heather Galvin","R"]]],
+    ["County Council",[["David Bartholomew — District 2","R"],["Michael J.D. Andersen — District 4","R"],["Joshua Hower — District 5","R"],["Anna Maria Tabernik — District 6","R"],["Kraig Gordon — District 8","R"],["Mark Lawson — District 9","R"],["John Casey — District 10","R"],["Elizabeth Galloway — District 11","R"]]]
+  ],
   Berkeley: [
     ["County Supervisor",[["Johnny Cribb","R"]]],
     ["Sheriff",[["Duane Lewis","R"]]],
@@ -182,15 +195,19 @@ const LOCAL = {
     ["County Council",[["Joe Debney — District 2","R"],["Rita May Oliphant Ranck — District 3","R"],["Jennifer Kunda — District 7","R"]]]
   ]
 };
+const SCHOOL = {
+  Berkeley: [["Mac McQuillin — District 2","NP"],["Kathy Littleton — District 4","NP"],["Sally Wofford — District 6","NP"]],
+  Charleston: [["Keith Grybowski — District 1","NP"],["Stuart Day — District 3","NP"],["Carlotta Bailey — District 5","NP"],["Leah Whatley — District 7","NP"],["Karen Luhrs — District 9","NP"]]
+};
 const MINI = window.MINI || {};
-const CO = {Berkeley:"B",Charleston:"C",Dorchester:"D"};
+const CO = {Beaufort:"F",Berkeley:"B",Charleston:"C",Dorchester:"D"};
 let feats = [];
 let countyFilter = "All";
 let show6 = false;
 let selected = null;
 let layer;
 
-const map = L.map("map", {zoomControl:true, minZoom:8}).setView([33.0, -80.05], 10);
+const map = L.map("map", {zoomControl:true, minZoom:8}).setView([32.7, -80.35], 9);
 L.tileLayer("https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png", {
   attribution: "&copy; OSM &copy; CARTO · precincts SC RFA",
   subdomains:"abcd", maxZoom:19
@@ -247,6 +264,9 @@ function candRows(list){
   if(!rows.length) return `<div class="cand"><span>No Republican on this ballot line</span><span class="party O">—</span></div>`;
   return rows.map(([n,p])=>`<div class="cand"><span>${n}</span><span class="party ${p}">${p}</span></div>`).join("");
 }
+function schoolRows(list){
+  return (list||[]).map(([n,p])=>`<div class="cand"><span>${n}</span><span class="party O">NP</span></div>`).join("");
+}
 
 function openPanel(f){
   selected=f;
@@ -260,12 +280,13 @@ function openPanel(f){
     <span class="badge ${p.cd==="1"?"b1":"b6"}">U.S. House CD-${p.cd}</span>
     <span class="badge b1">SC House ${p.house||"—"}</span>
     <h2>${p.precinct}</h2>
-    <div class="sub">${p.county} County · precinct ${p.pcode||""} · Republicans only</div>
+    <div class="sub">${p.county} County · precinct ${p.pcode||""}</div>
     <div class="office"><h3>U.S. Senate</h3>${candRows(SENATE)}</div>
     <div class="office"><h3>U.S. House, District ${p.cd}</h3>${candRows(us)}</div>
     ${STATEWIDE.map(([o,cs])=>`<div class="office"><h3>${o}</h3>${candRows(cs)}</div>`).join("")}
     <div class="office"><h3>SC House District ${p.house||""}</h3>${candRows(houseCands)}</div>
     ${loc.map(([o,cs])=>`<div class="office"><h3>${o}</h3>${candRows(cs)}</div>`).join("")}
+    ${((SCHOOL[p.county])?`<div class="office"><h3>School Board (nonpartisan)</h3>${schoolRows(SCHOOL[p.county])}<div class="sub">Only the district covering this precinct appears on the ballot. Confirm at scvotes.gov.</div></div>`:"")}
     <div class="office"><h3>Note</h3><div class="sub">County council and school-board seats are districted. Confirm the exact local line on scvotes.gov for an address in this precinct. SC Senate is not on the 2026 ballot.</div></div>
   `;
   document.getElementById("x").onclick=()=>{selected=null; document.getElementById("panel").style.display="none"; redraw();};
@@ -314,7 +335,7 @@ function redraw(){
   });
 }
 
-const counties=["All","Berkeley","Charleston","Dorchester"];
+const counties=["All","Beaufort","Berkeley","Charleston","Dorchester"];
 const chips=document.getElementById("chips");
 counties.forEach(c=>{
   const b=document.createElement("button");
@@ -333,7 +354,7 @@ document.getElementById("show6").onclick=function(){
 document.getElementById("q").addEventListener("input", redraw);
 async function loadShapes(){
   const url = "https://gis.charleston-sc.gov/arcgis2/rest/services/External/VotingDistricts/MapServer/9/query?where="+
-    encodeURIComponent("CountyName IN ('Berkeley','Charleston','Dorchester')")+
+    encodeURIComponent("CountyName IN ('Beaufort','Berkeley','Charleston','Dorchester')")+
     "&outFields=PName,PCode,CountyName,Name&f=geojson&outSR=4326&resultRecordCount=2000";
   try{
     const gj = await fetch(url).then(r=>r.json());
@@ -347,7 +368,7 @@ async function loadShapes(){
         county,
         precinct: name,
         pcode,
-        cd: hit[0] != null ? String(hit[0]) : "",
+        cd: hit[0] != null ? String(hit[0]) : (county==="Beaufort" ? "1" : ""),
         house: hit[1] != null ? hit[1] : ""
       };
       return f;
