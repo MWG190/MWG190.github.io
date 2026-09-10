@@ -106,7 +106,7 @@
   <aside>
     <header class="brand">
       <div class="kicker">November 3, 2026 · General election</div>
-      <h1>CD-01 precinct map</h1>
+      <h1>CD-01 precinct map · unique colors</h1>
       <p>Berkeley, Charleston, and Dorchester only. Click a precinct for the federal, statewide, and House names on that ballot.</p>
     </header>
     <div class="controls">
@@ -131,12 +131,9 @@
     <div id="map"></div>
     <div class="panel" id="panel"></div>
     <div class="legend">
-      <div><span class="sw" style="background:#1a9b94"></span> Berkeley precincts</div>
-      <div><span class="sw" style="background:#7b6bd6"></span> Charleston precincts</div>
-      <div><span class="sw" style="background:#d4a24a"></span> Dorchester precincts</div>
-      <div><span class="sw" style="background:#c4a07a"></span> CD-06 (muted)</div>
-      <div><span class="sw" style="background:transparent;outline:2px solid #05080c;height:8px"></span> Dark line = precinct edge</div>
-      <div class="note">Each precinct is a different tint inside its county so neighbors do not blend. Thick black outlines mark where one precinct ends and the next begins. Boundaries: SC RFA via Charleston GIS. Not a certified sample ballot — confirm at scvotes.gov.</div>
+      <div><span class="sw" style="background:linear-gradient(90deg,#e74c3c,#f1c40f,#2ecc71,#3498db,#9b59b6)"></span> One unique color per precinct</div>
+      <div><span class="sw" style="background:transparent;outline:2px solid #000;height:8px"></span> Black line = precinct edge</div>
+      <div class="note">Every precinct is a different color. Zoom in to see the black outlines. Not a certified sample ballot — confirm at scvotes.gov.</div>
     </div>
   </div>
 </div>
@@ -213,31 +210,35 @@ L.tileLayer("https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png", {
   subdomains:"abcd", maxZoom:19
 }).addTo(map);
 
-const COUNTY_PALETTES = {
-  Berkeley:   ["#1a9b94","#3ec6bd","#12756f","#7ed9c8","#2fbfa8","#0e5e5a"],
-  Charleston: ["#7b6bd6","#9b7cf0","#5b4cb0","#c4b0ef","#6e8ef0","#8a5ad4"],
-  Dorchester: ["#d4a24a","#e8c56a","#c47a3a","#f0b35a","#b8862e","#efd08a"]
-};
-const CD6_PALETTE = ["#c4a07a","#a9845e","#d4b896","#8a6d4d","#e0c4a0","#b08968"];
-function hashStr(s){
-  let h = 0;
-  for (let i = 0; i < s.length; i++) h = ((h << 5) - h) + s.charCodeAt(i) | 0;
-  return Math.abs(h);
+const COLOR_BY_KEY = {};
+function precinctKey(p){
+  return (p.county || "") + "|" + (p.pcode || "") + "|" + (p.precinct || "");
+}
+function assignUniqueColors(list){
+  const sorted = [...list].sort((a,b)=>{
+    const pa = a.properties, pb = b.properties;
+    return (pa.county + pa.precinct + pa.pcode).localeCompare(pb.county + pb.precinct + pb.pcode);
+  });
+  sorted.forEach((f,i)=>{
+    const p = f.properties;
+    const hue = (i * 137.508) % 360;
+    const sat = p.cd === "6" ? 48 : 72;
+    const lit = 38 + (i % 7) * 3;
+    COLOR_BY_KEY[precinctKey(p)] = "hsl(" + hue.toFixed(1) + ", " + sat + "%, " + lit + "%)";
+  });
 }
 function fillFor(p){
-  const key = (p.county || "") + "|" + (p.precinct || "") + "|" + (p.pcode || "");
-  const pal = p.cd === "6" ? CD6_PALETTE : (COUNTY_PALETTES[p.county] || COUNTY_PALETTES.Berkeley);
-  return pal[hashStr(key) % pal.length];
+  return COLOR_BY_KEY[precinctKey(p)] || "hsl(180, 60%, 42%)";
 }
 function styleFeat(f){
   const p = f.properties;
   const sel = selected && selected.properties.precinct === p.precinct && selected.properties.county === p.county;
   return {
-    color: sel ? "#ffffff" : "#05080c",
-    weight: sel ? 3.4 : 2.2,
+    color: sel ? "#ffffff" : "#000000",
+    weight: sel ? 3.6 : 2.4,
     opacity: 1,
     fillColor: fillFor(p),
-    fillOpacity: sel ? 0.82 : 0.58
+    fillOpacity: sel ? 0.9 : 0.78
   };
 }
 
@@ -288,6 +289,7 @@ function openPanel(f){
 }
 
 function redraw(){
+  if(feats.length && !Object.keys(COLOR_BY_KEY).length) assignUniqueColors(feats);
   const vis=visible();
   document.getElementById("nAll").textContent=vis.length;
   document.getElementById("n1").textContent=vis.filter(f=>f.properties.cd==="1").length;
@@ -359,6 +361,7 @@ async function loadShapes(){
       };
       return f;
     }).filter(f=>f.geometry);
+    assignUniqueColors(feats);
   }catch(e){
     console.error(e);
     feats = [];
